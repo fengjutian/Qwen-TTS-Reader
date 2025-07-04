@@ -2,10 +2,11 @@ import { useState } from "react";
 import "./App.css";
 import { AntDesignOutlined } from '@ant-design/icons';
 
-import { Input, Button, ConfigProvider, Space } from 'antd';
+import { Input, Button, ConfigProvider } from 'antd';
 import { createStyles } from 'antd-style';
+import { fetch } from '@tauri-apps/plugin-http';
 
-import React from 'react';
+// import React from 'react';
 import stylesModule from './app.module.css';
 
 const { TextArea } = Input;
@@ -34,6 +35,8 @@ const useStyle = createStyles(({ prefixCls, css }) => ({
   `,
 }));
 
+// const url = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation'
+// const DASHSCOPE_API_KEY = 'sk-00a8ab85616d4c8ea83041cd3b99612b';
 
 function App() {
 
@@ -84,10 +87,6 @@ function App() {
     }
   ]);
 
-  const [newBaseRoles] = useState([
-
-  ]);
-
   const selectedAudioType = (data: any) => {
     console.log('selectedAudioType', data); 
     const updatedRoles = baseRoles.map(role => {
@@ -102,15 +101,50 @@ function App() {
 
   const [inputContent, setInputContent] = useState('');
 
+  const genderAudio = async () => {
+    // 设置请求头
+    // const headers = {
+    //   'Authorization': `Bearer ${DASHSCOPE_API_KEY}`,
+    //   'Content-Type': 'application/json'
+    // };
+
+    // const data = {
+    //   model: 'qwen-tts',
+    //   input: {
+    //     text: '那我来给大家推荐一款 T 恤，这款呢真的是超级好看，这个颜色呢很明显的气质，而且呢也是相配的绝佳单品，大家都可以闭眼进入，真的是非常好看，对身体材质的包容性也很好，不管穿身体材质的衣服呢，穿上去都是很好看的。',
+    //     voice: 'Chelsie'
+    //   }
+    // };
+
+
+    // const response = await fetch(url,
+    //   {
+    //     method: 'POST',
+    //     headers: headers,
+    //     body: JSON.stringify(data)
+    //   }
+    // );
+    // console.log(response.status);  // e.g. 200
+    // console.log(response.statusText); // e.g. "OK"
+    // const jsonData = await response.json();
+    // console.log('jsonData', jsonData);
+
+
+    const response = await fetch("http://my.json.host/data.json");
+console.log(response.status);  // e.g. 200
+console.log(response.statusText); // e.g. "OK"
+// const jsonData = await response.json();
+    
+  }
 
   return (
     <main >
-      <h1>通义千问的语音合成模型, 语音阅读</h1>
+      <h1>语音阅读, 通义千问的语音合成模型</h1>
       <h3>Qwen-TTS 是通义千问系列的语音合成模型，支持输入中文、英文、中英混合的文本，并流式输出音频。</h3>
       {/* <h1>支持的音色</h1> */}
       <p>第0步：输入 API Key &nbsp;&nbsp;&nbsp; 链接：<a href='https://help.aliyun.com/zh/model-studio/get-api-key?spm=a2c4g.11186623.0.0.2dd320de5tPfm2'>阿里云百炼的模型服务</a></p>
       <p></p>
-      <Input.Password size="large" placeholder="请输入 Token" />
+      <Input.Password size="large" placeholder="请输入 API Key" />
       <p>第1步：选择音色</p>
       <div className={stylesModule['role-list']} >
         {
@@ -123,18 +157,6 @@ function App() {
           ))
         }
       </div>
-
-      {/* <p>qwen-tts-2025-05-22 与 qwen-tts-latest 还支持以下三种音色：</p> */}
-      {/* <div className={stylesModule['role-list']} >
-        {
-          newBaseRoles.map((role, index) => (
-            <div key={index} className={stylesModule['role-item']}>
-              <div>{role.name} ({role.gender})</div>
-              <audio src={role.audio} controls/>
-            </div>
-          ))
-        }
-      </div> */}
       <p>第2步：输入内容</p>
       <TextArea rows={10} placeholder="请输入文本。最大10000字符" 
         maxLength={10000} 
@@ -148,7 +170,7 @@ function App() {
           className: styles.linearGradientButton,
         }}
         >
-        <Button type="primary" size="large" icon={<AntDesignOutlined />}>
+        <Button type="primary" size="large" icon={<AntDesignOutlined />} onClick={genderAudio}>
           生成音频
         </Button>
       </ConfigProvider>
