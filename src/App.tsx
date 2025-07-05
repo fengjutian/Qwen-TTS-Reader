@@ -37,7 +37,6 @@ const useStyle = createStyles(({ prefixCls, css }) => ({
 }));
 
 const url = '/api/v1/services/aigc/multimodal-generation/generation'
-// const DASHSCOPE_API_KEY = 'sk-00a8ab85616d4c8ea83041cd3b99612b';
 
 function App() {
 
