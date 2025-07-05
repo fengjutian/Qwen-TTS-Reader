@@ -130,10 +130,13 @@ function App() {
     // console.log('jsonData', jsonData);
 
 
+    console.log('genderAudio', window.tauri);
+
+
     const response = await fetch("http://my.json.host/data.json");
-console.log(response.status);  // e.g. 200
-console.log(response.statusText); // e.g. "OK"
-// const jsonData = await response.json();
+    console.log(response.status);  // e.g. 200
+    console.log(response.statusText); // e.g. "OK"
+    // const jsonData = await response.json();
     
   }
 
