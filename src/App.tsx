@@ -205,7 +205,7 @@ function App() {
       </div>
       <p>第2步：输入内容</p>
       <TextArea rows={10} placeholder="请输入文本。最大10000字符" 
-        maxLength={10000} 
+        maxLength={500} 
         count={{show:true}}
         value={inputContent}
         onChange={(e) => setInputContent(e.target.value)}
