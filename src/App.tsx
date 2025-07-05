@@ -1,10 +1,11 @@
 import { useState } from "react";
 import "./App.css";
 import { AntDesignOutlined } from '@ant-design/icons';
-
 import { Input, Button, ConfigProvider } from 'antd';
 import { createStyles } from 'antd-style';
 import { fetch } from '@tauri-apps/plugin-http';
+import { request } from './request';
+import axios from 'axios';
 
 // import React from 'react';
 import stylesModule from './app.module.css';
@@ -35,8 +36,8 @@ const useStyle = createStyles(({ prefixCls, css }) => ({
   `,
 }));
 
-// const url = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation'
-// const DASHSCOPE_API_KEY = 'sk-00a8ab85616d4c8ea83041cd3b99612b';
+const url = '/api/v1/services/aigc/multimodal-generation/generation'
+const DASHSCOPE_API_KEY = 'sk-00a8ab85616d4c8ea83041cd3b99612b';
 
 function App() {
 
@@ -103,41 +104,43 @@ function App() {
 
   const genderAudio = async () => {
     // 设置请求头
-    // const headers = {
-    //   'Authorization': `Bearer ${DASHSCOPE_API_KEY}`,
-    //   'Content-Type': 'application/json'
-    // };
+    const headers = {
+      'Authorization': `Bearer ${DASHSCOPE_API_KEY}`,
+      'Content-Type': 'application/json'
+    };
 
-    // const data = {
-    //   model: 'qwen-tts',
-    //   input: {
-    //     text: '那我来给大家推荐一款 T 恤，这款呢真的是超级好看，这个颜色呢很明显的气质，而且呢也是相配的绝佳单品，大家都可以闭眼进入，真的是非常好看，对身体材质的包容性也很好，不管穿身体材质的衣服呢，穿上去都是很好看的。',
-    //     voice: 'Chelsie'
-    //   }
-    // };
+    const data = {
+      model: 'qwen-tts',
+      input: {
+        text: '那我来给大家推荐一款 T 恤，这款呢真的是超级好看，这个颜色呢很明显的气质，而且呢也是相配的绝佳单品，大家都可以闭眼进入，真的是非常好看，对身体材质的包容性也很好，不管穿身体材质的衣服呢，穿上去都是很好看的。',
+        voice: 'Chelsie'
+      }
+    };
+
+    axios({
+      url,
+      method: 'POST',
+      headers: headers,
+      data: data,
+      // withCredentials: true, // 如果需要携带cookie
+      responseType: 'json' // 如果需要返回json格式
+    }).then((response) => {
+      console.log('response', response);
+      if (response.status === 200) {
+        console.log('response data', response.data);
+      
+      }}).catch((error) => {
+        console.error('Error:', error);
+      });
 
 
-    // const response = await fetch(url,
-    //   {
-    //     method: 'POST',
-    //     headers: headers,
-    //     body: JSON.stringify(data)
-    //   }
-    // );
-    // console.log(response.status);  // e.g. 200
-    // console.log(response.statusText); // e.g. "OK"
-    // const jsonData = await response.json();
-    // console.log('jsonData', jsonData);
+    // console.log('genderAudio', window.tauri);
 
-
-    console.log('genderAudio', window.tauri);
-
-
-    const response = await fetch("http://my.json.host/data.json");
-    console.log(response.status);  // e.g. 200
-    console.log(response.statusText); // e.g. "OK"
-    // const jsonData = await response.json();
-    
+    // request({}).then((res) => {
+    //   console.log('request res', res);
+    // }).catch((err) => {
+    //   console.error('request error', err);
+    // });
   }
 
   return (
@@ -177,7 +180,9 @@ function App() {
           生成音频
         </Button>
       </ConfigProvider>
-      <p></p>
+      <p>
+        <video src="http://dashscope-result-wlcb.oss-cn-wulanchabu.aliyuncs.com/1d/95/20250705/e6c1b9cc/62262710-0774-43ff-8d31-2527e159aee8.wav?Expires=1751789384&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=z%2F6i0LqG4JphiWs1TVp%2BJ%2Bmr%2FHM%3D" controls />
+      </p>
     </main>
   );
 }

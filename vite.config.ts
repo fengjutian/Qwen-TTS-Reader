@@ -14,6 +14,14 @@ export default defineConfig(async () => ({
   clearScreen: false,
   // 2. tauri expects a fixed port, fail if that port is not available
   server: {
+    proxy: {
+      '/api': {
+        target: 'https://dashscope.aliyuncs.com/api',   // 后端 API 地址
+        changeOrigin: true,                // 改变请求源，避免 CORS 问题
+        secure: false,                     // 如果是https接口，需要配置为false
+        rewrite: (path) => path.replace(/^\/api/, ''),  // 重写路径，去掉/api前缀
+      },
+    },
     port: 1420,
     strictPort: true,
     host: host || false,

@@ -1,10 +1,10 @@
 import axios from 'axios';
 import axiosTauriApiAdapter from 'axios-tauri-api-adapter';
 // import { message } from 'ant-design-vue';
-​
+
 export const http =  axios.create({
     // 本地请求服务端
-    baseURL: 'http://127.0.0.1:8001/api/v1/',
+    baseURL: 'http://my.json.host/data.json',
     timeout: 10000,
     headers: {
         Accept: 'application/json, text/plain, */*',
@@ -13,7 +13,6 @@ export const http =  axios.create({
     },
     adapter: axiosTauriApiAdapter,
 });
-​
 // 添加请求拦截器
 http.interceptors.request.use(
     (config) => {
@@ -24,7 +23,6 @@ http.interceptors.request.use(
         return Promise.reject(error);
     }
 );
-​
 // 添加响应拦截器
 http.interceptors.response.use(
     (response) => {
@@ -41,7 +39,6 @@ http.interceptors.response.use(
         }
     }
 );
-​
 export function request<T>(data: any): Promise<T> {
     return new Promise((resolve, reject) => {
         const promise = http(data);
