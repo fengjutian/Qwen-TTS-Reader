@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "./App.css";
 import { AntDesignOutlined } from '@ant-design/icons';
-import { Input, Button, ConfigProvider } from 'antd';
+import { Input, Button, ConfigProvider, message } from 'antd';
 import { createStyles } from 'antd-style';
 import { fetch } from '@tauri-apps/plugin-http';
 import { request } from './request';
@@ -37,54 +37,71 @@ const useStyle = createStyles(({ prefixCls, css }) => ({
 }));
 
 const url = '/api/v1/services/aigc/multimodal-generation/generation'
-const DASHSCOPE_API_KEY = 'sk-00a8ab85616d4c8ea83041cd3b99612b';
+// const DASHSCOPE_API_KEY = 'sk-00a8ab85616d4c8ea83041cd3b99612b';
 
 function App() {
 
   const { styles } = useStyle();
+  const val = localStorage.getItem('DASHSCOPE_API_KEY') ?? '';
+  const [DASHSCOPE_API_KEY, setDASHSCOPE_API_KEY] = useState(val);
+  const [audioConfig, setAudioConfig] = useState({
+    model: 'qwen-tts',
+    voice: 'Chelsie',
+  });
+  const [messageApi, contextHolder] = message.useMessage();
+  const [inputContent, setInputContent] = useState('');
+  const [audioUrl, setAudioUrl] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const [baseRoles, setBaseRoles] = useState([
     {
       name: 'Chelsie',
       gender: '女',
       audio: '/audio/Chelsie_ZH.wav',
-      isChoiced: true
+      isChoiced: true,
+      model: 'qwen-tts'
     },
     {
       name: 'Cherry',
       gender: '女',
       audio: '/audio/Cherry_ZH.wav',
-      isChoiced: false
+      isChoiced: false,
+       model: 'qwen-tts'
     },
     {
       name: 'Ethan',
       gender: '男',
       audio: '/audio/Ethan_ZH.wav',
-      isChoiced: false
+      isChoiced: false,
+      model: 'qwen-tts'
     },
     {
       name: 'Serena',
       gender: '女',
       audio: '/audio/Serena_ZH.wav',
-      isChoiced: false
+      isChoiced: false,
+      model: 'qwen-tts'
     },
         {
       name: 'Dylan',
       gender: '北京话-男',
       audio: '/audio/北京话-zh.wav',
-      isChoiced: false
+      isChoiced: false,
+      model: 'qwen-tts-latest'
     },
     {
       name: 'Jada',
       gender: '吴语-女',
       audio: '/audio/上海话-zh.wav',
-      isChoiced: false
+      isChoiced: false,
+      model: 'qwen-tts-latest'
     },
     {
       name: 'Sunny',
       gender: '四川话-女',
       audio: '/audio/四川话-zh.wav',
-      isChoiced: false
+      isChoiced: false,
+      model: 'qwen-tts-latest'
     }
   ]);
 
@@ -97,12 +114,22 @@ function App() {
       };
     });
     console.log('updatedRoles', updatedRoles);
+    setAudioConfig({
+      ...audioConfig,
+      voice: data.name,
+      model: data.model,
+    });
     setBaseRoles(updatedRoles);
   }
 
-  const [inputContent, setInputContent] = useState('');
-
   const genderAudio = async () => {
+    if(!inputContent){
+      messageApi.open({
+        type: 'warning',
+        content: '请输入文本内容',
+      });
+      return
+    }
     // 设置请求头
     const headers = {
       'Authorization': `Bearer ${DASHSCOPE_API_KEY}`,
@@ -110,12 +137,14 @@ function App() {
     };
 
     const data = {
-      model: 'qwen-tts',
+      model: audioConfig.model,
       input: {
-        text: '那我来给大家推荐一款 T 恤，这款呢真的是超级好看，这个颜色呢很明显的气质，而且呢也是相配的绝佳单品，大家都可以闭眼进入，真的是非常好看，对身体材质的包容性也很好，不管穿身体材质的衣服呢，穿上去都是很好看的。',
-        voice: 'Chelsie'
+        text: inputContent,
+        voice: audioConfig.voice
       }
     };
+
+    setLoading(true);
 
     axios({
       url,
@@ -125,32 +154,44 @@ function App() {
       // withCredentials: true, // 如果需要携带cookie
       responseType: 'json' // 如果需要返回json格式
     }).then((response) => {
+      setLoading(false);
       console.log('response', response);
       if (response.status === 200) {
         console.log('response data', response.data);
-      
+        const audioUrl = response.data.output.audio;
+        if(audioUrl) {
+          messageApi.open({
+            type: 'success',
+            content: '文件已经生成，请点击播放按钮试听',
+          });
+           setAudioUrl(audioUrl.url)
+        }
       }}).catch((error) => {
+        setLoading(false);
         console.error('Error:', error);
+        messageApi.open({
+          type: 'error',
+          content: error.message || '请求失败，请检查API Key或网络连接',
+        });
       });
+  }
 
-
-    // console.log('genderAudio', window.tauri);
-
-    // request({}).then((res) => {
-    //   console.log('request res', res);
-    // }).catch((err) => {
-    //   console.error('request error', err);
-    // });
+  const getApiKey = (e: any) => {
+    console.log('getApiKey', e.target);
+    setDASHSCOPE_API_KEY(e.target.value);
+    localStorage.setItem('DASHSCOPE_API_KEY', e.target.value);
   }
 
   return (
     <main >
+      {contextHolder}
       <h1>语音阅读, 通义千问的语音合成模型</h1>
       <h3>Qwen-TTS 是通义千问系列的语音合成模型，支持输入中文、英文、中英混合的文本，并流式输出音频。</h3>
+      <a href='https://help.aliyun.com/zh/model-studio/qwen-tts' target='_blank'>了解更多</a>
       {/* <h1>支持的音色</h1> */}
-      <p>第0步：输入 API Key &nbsp;&nbsp;&nbsp; 链接：<a href='https://help.aliyun.com/zh/model-studio/get-api-key?spm=a2c4g.11186623.0.0.2dd320de5tPfm2'>阿里云百炼的模型服务</a></p>
+      <p>第0步：输入 API Key &nbsp;&nbsp;&nbsp; 链接：<a href='https://help.aliyun.com/zh/model-studio/get-api-key?spm=a2c4g.11186623.0.0.2dd320de5tPfm2' target="_blank">阿里云百炼的模型服务</a></p>
       <p></p>
-      <Input.Password size="large" placeholder="请输入 API Key" />
+      <Input.Password size="large" value={DASHSCOPE_API_KEY} onChange={getApiKey} placeholder="请输入 API Key" />
       <p>第1步：选择音色</p>
       <div className={stylesModule['role-list']} >
         {
@@ -176,12 +217,12 @@ function App() {
           className: styles.linearGradientButton,
         }}
         >
-        <Button type="primary" size="large" icon={<AntDesignOutlined />} onClick={genderAudio}>
+        <Button type="primary" size="large" loading={loading} icon={<AntDesignOutlined />} onClick={genderAudio}>
           生成音频
         </Button>
       </ConfigProvider>
       <p>
-        <video src="http://dashscope-result-wlcb.oss-cn-wulanchabu.aliyuncs.com/1d/95/20250705/e6c1b9cc/62262710-0774-43ff-8d31-2527e159aee8.wav?Expires=1751789384&OSSAccessKeyId=LTAI5tKPD3TMqf2Lna1fASuh&Signature=z%2F6i0LqG4JphiWs1TVp%2BJ%2Bmr%2FHM%3D" controls />
+        <audio src={audioUrl} controls />
       </p>
     </main>
   );
